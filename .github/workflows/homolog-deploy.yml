@@ -53,10 +53,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Define o nome do repositório do github em lowercase # Serve para construir a imagem (limitação do docker)
-        run: |
-          echo "REPO_LOWER=${REPO_LOWER,,}" >>${GITHUB_ENV}
         env:
-          OWNER: '${{ github.repository }}'
+          REPO_NAME: '${{ github.repository }}'
+        run: |
+          echo "REPO_LOWER=${REPO_NAME,,}" >>${GITHUB_ENV}
 
       - name: Build e Push da Imagem
         uses: docker/build-push-action@v5
