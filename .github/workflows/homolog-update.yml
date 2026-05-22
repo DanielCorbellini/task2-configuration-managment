@@ -8,17 +8,20 @@ jobs:
   update-homolog:
     runs-on: self-hosted
     steps:
-      - name: Atualização do ambiente de Homologação
-        run: |
-          cd /home/univates/CM/homolog
-
-          # 1. Faz o login no repositório do GitHub usando o token secreto
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          echo "Baixando a nova imagem pronta..."
-          docker compose pull
-
-          echo "Recriando os containers com a nova versão..."
-          docker compose up -d --build
-
-          docker logout ghcr.io
+    - name: Atualização do ambiente de Homologação
+      run: |
+        # 1. Faz login
+        docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
+    
+        # 2. Garante que o container antigo seja removido para não dar conflito de nome/porta
+        docker rm -f meu-app-homolog || true
+    
+        # 3. Puxa e roda direto em uma linha só!
+        docker run -d \
+          --name meu-app-homolog \
+          -p 8080:80 \
+          --restart always \
+          ghcr.io/danielcorbellini/task2-configuration-managment:homolog
+    
+        # 4. Limpa credenciais
+        docker logout ghcr.io
