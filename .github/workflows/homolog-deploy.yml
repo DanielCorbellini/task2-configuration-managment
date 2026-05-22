@@ -52,15 +52,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Define o nome do usuário do github em lowercase # Serve para construir a imagem (limitação do docker)
+      - name: Define o nome do repositório do github em lowercase # Serve para construir a imagem (limitação do docker)
         run: |
-          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+          echo "REPO_LC=${REPO_LOWER,,}" >>${GITHUB_ENV}
         env:
-          OWNER: '${{ github.repository_owner }}'
+          OWNER: '${{ github.repository }}'
 
       - name: Build e Push da Imagem
         uses: docker/build-push-action@v5
         with:
           context: . # Diretório atual
           push: true # Imagem é compilada e assim que terminar de ser construída localmente é feito o push dela para o servidor do GitHub Container Registry (GHCR)
-          tags: ghcr.io/${{ github.repository }}:homolog
+          tags: ghcr.io/${{ env.REPO_LC }}:homolog
