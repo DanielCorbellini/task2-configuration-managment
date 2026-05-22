@@ -1,0 +1,24 @@
+# Utilizado sempre após o CI de Homologação for realizado
+name: Homolagação (CD) - Update de código
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-homolog:
+    runs-on: self-hosted
+    steps:
+      - name: Atualização do ambiente de Homologação
+        run: |
+          cd /home/univates/CM/homolog
+
+          # 1. Faz o login no repositório do GitHub usando o token secreto
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          echo "Baixando a nova imagem pronta..."
+          docker compose pull
+
+          echo "Recriando os containers com a nova versão..."
+          docker compose up -d --build
+
+          docker logout ghcr.io

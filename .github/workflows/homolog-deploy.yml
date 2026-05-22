@@ -1,0 +1,62 @@
+# Utilize sempre que novos commits são feitos na branch homolog ou quando é realizado primeiro build
+name: Homolagação (CI) - Testes e Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  qualidade-codigo:
+    uses: ./.github/workflows/pylint.yml
+
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements-dev.txt
+          pip install pytest-cov # Garante que o gerador de cobertura esteja presente
+
+      - name: Executar Testes e gerar XML
+        run: |
+          pytest --junitxml=result.xml --cov=app --cov-report=term-missing
+
+      - name: Exibir estatísticas no PR
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() # Roda mesmo se os testes falharem para mostrar o que errou
+        with:
+          files: result.xml
+
+  deploy-homolog:
+    needs: [qualidade-codigo] # [qualidade-codigo, testes] -- IREI AJUSTAR DEPOIS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e Push da Imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:homolog
