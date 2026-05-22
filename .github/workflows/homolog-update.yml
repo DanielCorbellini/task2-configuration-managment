@@ -7,21 +7,29 @@ on:
 jobs:
   update-homolog:
     runs-on: self-hosted
+    
+    defaults:
+      run:
+        working-directory: /home/univates/CM/homolog
+
     steps:
-    - name: Atualização do ambiente de Homologação
-      run: |
-        # 1. Faz login
-        docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
-    
-        # 2. Garante que o container antigo seja removido para não dar conflito de nome/porta
-        docker rm -f meu-app-homolog || true
-    
-        # 3. Puxa e roda direto em uma linha só!
-        docker run -d \
-          --name meu-app-homolog \
-          -p 8080:80 \
-          --restart always \
-          ghcr.io/danielcorbellini/task2-configuration-managment:homolog
-    
-        # 4. Limpa credenciais
-        docker logout ghcr.io
+      - name: Atualização do ambiente de Homologação (Rootless)
+        run: |
+          # 1. Configura a variável para o terminal saber onde está o Docker Rootless
+          export DOCKER_HOST=unix:///run/user/1001/docker.sock
+
+          echo "2. Fazendo login de forma segura no GHCR..."
+          docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
+
+          echo "3. Removendo o container antigo se ele existir..."
+          docker rm -f meu-app-homolog || true
+
+          echo "4. Rodando o container direto da imagem do GHCR..."
+          docker run -d \
+            --name meu-app-homolog \
+            -p 8080:80 \
+            --restart always \
+            ghcr.io/danielcorbellini/task2-configuration-managment:homolog
+
+          echo "5. Limpeza de credenciais..."
+          docker logout ghcr.io
