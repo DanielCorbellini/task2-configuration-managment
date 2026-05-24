@@ -32,11 +32,11 @@ jobs:
           dockerd-rootless-setuptool.sh install
 
           echo "Criando pastas dos ambientes HOMOLOG e PROD..."
-          mkdir -p /home/univates/CM/homolog
-          mkdir -p /home/univates/CM/prod
+          mkdir -p /home/univates/cm/homolog
+          mkdir -p /home/univates/cm/prod
 
           echo "Ajustando as permissões das pastas..."
-          sudo chown -R $USER:$USER /home/univates/CM/homolog
-          sudo chown -R $USER:$USER /home/univates/CM/prod
+          sudo chown -R $USER:$USER /home/univates/cm/homolog
+          sudo chown -R $USER:$USER /home/univates/cm/prod
 
           echo "Provisionamento concluído! A VM está pronta para receber os ambientes!"
