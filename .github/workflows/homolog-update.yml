@@ -13,6 +13,25 @@ jobs:
         working-directory: /home/univates/CM/homolog
 
     steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Copia docker-compose.yml e dump.sql para a pasta de homologação
+        run: |
+          cp docker-compose.yml /home/univates/CM/homolog/
+          cp dump.sql /home/univates/CM/homolog/
+
+      - name: Gera o arquivo .env
+        run: |
+          cat > .env << EOF
+          DB_USER=${{secrets.DB_USER}}
+          DB_HOST=${{secrets.DB_HOST}}
+          DB_PORT=${{secrets.DB_PORT}}
+          DB_NAME=${{secrets.DB_NAME}}
+          DB_PASSWORD=${{secrets.DB_PASSWORD}}
+          SECRET_SESSION_KEY=${{secrets.SECRET_SESSION_KEY}}
+          EOF
+
       - name: Atualização do ambiente de Homologação (Rootless)
         run: |
           # 1. Configura a variável para o terminal saber onde está o Docker Rootless
