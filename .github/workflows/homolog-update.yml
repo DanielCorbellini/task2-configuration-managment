@@ -18,8 +18,8 @@ jobs:
 
       - name: Copia docker-compose.yml e dump.sql para a pasta de homologação
         run: |
-          cp $GITHUB_WORKSPACE/docker-compose.yml /home/univates/cm/homolog/
-          cp $GITHUB_WORKSPACE/dump.sql /home/univates/cm/homolog/
+          cp $GITHUB_WORKSPACE/docker-compose.yml .
+          cp $GITHUB_WORKSPACE/dump.sql .
 
       - name: Gera o arquivo .env
         run: |
@@ -34,17 +34,21 @@ jobs:
 
       - name: Atualização do ambiente de Homologação (Rootless)
         run: |
-          # 1. Configura a variável para o terminal saber onde está o Docker Rootless
-          export DOCKER_HOST=unix:///run/user/1001/docker.sock
+          #1. Configura as variáveis completas para o ambiente Rootless do usuário 1001
+          export USER_ID=$(id -u)
+          export HOME=/home/univates
+          export XDG_RUNTIME_DIR=/run/user/$USER_ID
+          export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+          export PATH=$HOME/bin:$PATH
 
-          echo "2. Fazendo login de forma segura no GHCR..."
+          echo "1. Fazendo login de forma segura no GHCR..."
           docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
 
-          echo "3. Baixando a versão mais recente de homologação..."
+          echo "2. Baixando a versão mais recente de homologação..."
           APP_TAG=homolog docker compose pull
 
-          echo "4. Atualizando a aplicação..."
+          echo "3. Atualizando a aplicação..."
           APP_TAG=homolog docker compose up -d --remove-orphans
 
-          echo "5. Limpeza de credenciais..."
+          echo "4. Limpeza de credenciais..."
           docker logout ghcr.io
