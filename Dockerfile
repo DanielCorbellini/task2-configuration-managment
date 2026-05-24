@@ -1,5 +1,5 @@
 # Imagem base leve com Python 3.12
-FROM --platform=linux/amd64 python:3.12-slim
+FROM python:3.12-slim
 
 # Instala dependências de sistema necessárias para:
 #   - psycopg2-binary (libpq-dev)
