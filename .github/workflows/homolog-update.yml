@@ -32,15 +32,10 @@ jobs:
           SECRET_SESSION_KEY=${{secrets.SECRET_SESSION_KEY}}
           EOF
 
-      - name: Atualização do ambiente de Homologação (Rootless)
-        run: |
-          #1. Configura as variáveis completas para o ambiente Rootless do usuário 1001
-          export USER_ID=$(id -u)
-          export HOME=/home/univates
-          export XDG_RUNTIME_DIR=/run/user/$USER_ID
-          export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
-          export PATH=$HOME/bin:$PATH
+      # Fazer algo para rodar migrations
 
+      - name: Atualização do ambiente de Homologação
+        run: |
           echo "1. Fazendo login de forma segura no GHCR..."
           docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
 
