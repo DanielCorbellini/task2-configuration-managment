@@ -27,7 +27,7 @@ services:
 
   # --------------- Aplicação Flask ---------------
   app:
-    image: ghcr.io/danielcorbellini/task2-configurationmanagment:${APP_TAG:-latest}
+    image: ghcr.io/danielcorbellini/task2-configuration-managment:${APP_TAG:-latest}
     container_name: app
     restart: unless-stopped
     ports:
