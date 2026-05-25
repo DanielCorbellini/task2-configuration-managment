@@ -43,7 +43,7 @@ jobs:
           APP_TAG=homolog docker compose pull
 
           echo "3. Atualizando a aplicação..."
-          APP_TAG=homolog docker compose up -d --remove-orphans
+          APP_TAG=homolog docker compose up -d --remove-orphans app-homolog
 
           echo "4. Limpeza de credenciais..."
           docker logout ghcr.io

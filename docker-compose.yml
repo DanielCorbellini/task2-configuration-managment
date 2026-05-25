@@ -2,14 +2,14 @@ services:
   # --------------- Banco de Dados PostgreSQL ---------------
   db:
     image: postgres:16-alpine
-    container_name: db
+    container_name: db-${APP_TAG}
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-lancamentos}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       # Persiste os dados do banco entre recriações do contêiner
       - pgdata:/var/lib/postgresql/data
@@ -28,10 +28,10 @@ services:
   # --------------- Aplicação Flask ---------------
   app:
     image: ghcr.io/danielcorbellini/task2-configuration-managment:${APP_TAG:-latest}
-    container_name: app
+    container_name: app-${APP_TAG}
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5001:5000"
     env_file:
       - .env
     environment:
