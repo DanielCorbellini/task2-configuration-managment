@@ -31,9 +31,9 @@ The application is built on a standard **Client-Server Architecture**:
 | `GET` | `/lancamento` | Dashboard displaying the finance table, optional query parameters (`?data=` & `?situacao=`), and the new entry form. |
 | `POST` | `/lancamento` | Processes and persists a new finance entry to the PostgreSQL database. |
 | `GET` | `/exportar_pdf` | Converts current Dashboard variables into a downloadable `.pdf` report utilizing WeasyPrint. |
-| `GET` | `/editar_lancamento/<id>` | Forces the server to render a centralized edit modal injected dynamically over the Dashboard interface. |
-| `POST` | `/editar_lancamento/<id>` | Updates the values of the specific postgres row. |
-| `GET` | `/deletar_lancamento/<id>` | Provides immediate database purging capabilities routing users back efficiently. |
+| `GET` | `/editar_lancamento/<launch_id>` | Forces the server to render a centralized edit modal injected dynamically over the Dashboard interface. |
+| `POST` | `/editar_lancamento/<launch_id>` | Updates the values of the specific postgres row. |
+| `GET` | `/deletar_lancamento/<launch_id>` | Provides immediate database purging capabilities routing users back efficiently. |
 | `GET` | `/logout` | Clears the Flask session and routes the user back to `/login`. |
 
 ## 🚀 Getting Started

@@ -146,7 +146,7 @@ def exportar_pdf():
     )
 
 
-@app.route("/editar_lancamento/<int:id>", methods=["GET"])
+@app.route("/editar_lancamento/<int:launch_id>", methods=["GET"])
 def editar_lancamento_route(launch_id):
     """
     Handles the edit launch page GET request.
@@ -170,7 +170,7 @@ def editar_lancamento_route(launch_id):
     )
 
 
-@app.route("/editar_lancamento/<int:id>", methods=["POST"])
+@app.route("/editar_lancamento/<int:launch_id>", methods=["POST"])
 def editar_lancamento_post(launch_id):
     """
     Handles the edit launch page POST request.
@@ -195,7 +195,7 @@ def editar_lancamento_post(launch_id):
     return redirect(url_for("lancamento"))
 
 
-@app.route("/deletar_lancamento/<int:id>", methods=["GET"])
+@app.route("/deletar_lancamento/<int:launch_id>", methods=["GET"])
 def deletar_lancamento_route(launch_id):
     """
     Handles the delete launch page GET request.
