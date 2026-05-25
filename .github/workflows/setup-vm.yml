@@ -24,8 +24,9 @@ jobs:
           sudo apt-get install docker-compose-plugin -y
 
           echo "Adicionando o usuário ao grupo docker..."
-          # Permite executar comandos Docker sem sudo nas próximas sessões
-          sudo usermod -aG docker $USER
+
+          # Adiciona o usuário atual ao grupo docker (Não pede sudo mais tarde)
+          sudo gpasswd -a $USER docker
 
           echo "Criando pastas dos ambientes HOMOLOG e PROD..."
           mkdir -p /home/univates/cm/homolog
