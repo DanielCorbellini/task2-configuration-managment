@@ -5,7 +5,6 @@ FROM python:3.12-slim
 #   - psycopg2-binary (libpq-dev)
 #   - WeasyPrint (instalado via apt para puxar todas as libs nativas automaticamente)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
     weasyprint \
     && rm -rf /var/lib/apt/lists/*
 

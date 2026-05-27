@@ -39,11 +39,19 @@ jobs:
           echo "1. Fazendo login de forma segura no GHCR..."
           docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
 
-          echo "2. Baixando a versão mais recente de homologação..."
+          echo "2. Baixando a versão mais recente de homologação..." # puxa para o local
           APP_TAG=homolog docker compose pull
 
-          echo "3. Atualizando a aplicação..."
-          APP_TAG=homolog docker compose up -d --remove-orphans app
+          echo "3. Subindo apenas o container do banco de dados..."
+          APP_TAG=homolog docker compose up -d db
 
-          echo "4. Limpeza de credenciais..."
+          echo "4. Rodando migrations em um container temporário..."
+          # O docker run cria um container temporário. Roda o scrip de migrations, atualiza o banco e se destrói (--rm).
+          # O container oficial ainda não foi mexido
+          APP_TAG=homolog docker compose run --rm app alembic upgrade head
+
+          echo "5. Atualizando ambiente de homologação..."
+          APP_TAG=homolog docker compose up -d --remove-orphans
+
+          echo "6. Limpeza de credenciais..."
           docker logout ghcr.io
