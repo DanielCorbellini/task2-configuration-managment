@@ -13,8 +13,6 @@ services:
     volumes:
       # Persiste os dados do banco entre recriações do contêiner
       - pgdata:/var/lib/postgresql/data
-      # Executa o dump.sql automaticamente na PRIMEIRA inicialização
-      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
     healthcheck:
       test:
         [

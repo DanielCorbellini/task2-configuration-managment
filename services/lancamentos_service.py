@@ -1,41 +1,41 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from config.database import get_db_connection
+from sqlalchemy.exc import SQLAlchemyError
+from config.connection import SessionLocal
+from models.lancamento import Lancamento
 
 
 def listar_lancamentos(id_usuario=None, data_filtro=None, situacao_filtro=None):
     """
     Access the database and list the launches with optional filters.
     """
-    conn = get_db_connection()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            query = """
-                SELECT id, descricao, data_lancamento, valor, tipo_lancamento, situacao, id_usuario
-                FROM lancamento
-                WHERE 1=1
-            """
-            params = []
+    with SessionLocal() as db:
+        try:
+            query = db.query(Lancamento)
 
             if id_usuario:
-                query += " AND id_usuario = %s"
-                params.append(id_usuario)
+                query = query.filter(Lancamento.id_usuario == id_usuario)
             if data_filtro:
-                query += " AND data_lancamento = %s"
-                params.append(data_filtro)
+                query = query.filter(Lancamento.data_lancamento == data_filtro)
             if situacao_filtro and situacao_filtro != "ALL":
-                query += " AND situacao = %s"
-                params.append(situacao_filtro)
+                query = query.filter(Lancamento.situacao == situacao_filtro)
 
-            query += " ORDER BY data_lancamento DESC"
+            query = query.order_by(Lancamento.data_lancamento.desc())
 
-            cursor.execute(query, tuple(params))
-            return cursor.fetchall()
-    except psycopg2.Error as e:
-        print(f"Erro ao buscar lançamentos: {e}")
-        return []
-    finally:
-        conn.close()
+            lancamentos = query.all()
+            return [
+                {
+                    "id": l.id,
+                    "descricao": l.descricao,
+                    "data_lancamento": l.data_lancamento,
+                    "valor": l.valor,
+                    "tipo_lancamento": l.tipo_lancamento,
+                    "situacao": l.situacao,
+                    "id_usuario": l.id_usuario,
+                }
+                for l in lancamentos
+            ]
+        except SQLAlchemyError as e:
+            print(f"Erro ao buscar lançamentos: {e}")
+            return []
 
 
 def inserir_lancamento(
@@ -50,48 +50,46 @@ def inserir_lancamento(
     """
     Inserts a new launch into the database.
     """
-    conn = get_db_connection()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            query = """
-                INSERT INTO lancamento (descricao, data_lancamento, valor, tipo_lancamento, situacao, id_usuario)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(
-                query,
-                (
-                    descricao,
-                    data_lancamento,
-                    valor,
-                    tipo_lancamento,
-                    situacao,
-                    id_usuario,
-                ),
+    with SessionLocal() as db:
+        try:
+            lancamento = Lancamento(
+                descricao=descricao,
+                valor=valor,
+                data_lancamento=data_lancamento,
+                situacao=situacao,
+                tipo_lancamento=tipo_lancamento,
+                id_usuario=id_usuario,
             )
-            conn.commit()
+            db.add(lancamento)
+            db.commit()
             return True
-    except psycopg2.Error as e:
-        print(f"Erro ao inserir lançamento: {e}")
-        return False
-    finally:
-        conn.close()
+        except SQLAlchemyError as e:
+            db.rollback()
+            print(f"Erro ao inserir lançamento: {e}")
+            return False
 
 
 def buscar_lancamento_por_id(launch_id):
     """
     Finds a specific launch by its ID.
     """
-    conn = get_db_connection()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            query = "SELECT * FROM lancamento WHERE id = %s"
-            cursor.execute(query, (launch_id,))
-            return cursor.fetchone()
-    except psycopg2.Error as e:
-        print(f"Erro ao buscar lançamento por id: {e}")
-        return None
-    finally:
-        conn.close()
+    with SessionLocal() as db:
+        try:
+            lancamento = db.query(Lancamento).filter(Lancamento.id == launch_id).first()
+            if lancamento:
+                return {
+                    "id": lancamento.id,
+                    "descricao": lancamento.descricao,
+                    "data_lancamento": lancamento.data_lancamento,
+                    "valor": lancamento.valor,
+                    "tipo_lancamento": lancamento.tipo_lancamento,
+                    "situacao": lancamento.situacao,
+                    "id_usuario": lancamento.id_usuario,
+                }
+            return None
+        except SQLAlchemyError as e:
+            print(f"Erro ao buscar lançamento por id: {e}")
+            return None
 
 
 def atualizar_lancamento(
@@ -107,48 +105,36 @@ def atualizar_lancamento(
     """
     Updates the data of an existing launch.
     """
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cursor:
-            query = """
-                UPDATE lancamento
-                SET descricao = %s, data_lancamento = %s, valor = %s, tipo_lancamento = %s, situacao = %s, id_usuario = %s
-                WHERE id = %s
-            """
-            cursor.execute(
-                query,
-                (
-                    descricao,
-                    data_lancamento,
-                    valor,
-                    tipo_lancamento,
-                    situacao,
-                    id_usuario,
-                    launch_id,
-                ),
+    with SessionLocal() as db:
+        try:
+            db.query(Lancamento).filter(Lancamento.id == launch_id).update(
+                {
+                    "descricao": descricao,
+                    "data_lancamento": data_lancamento,
+                    "valor": valor,
+                    "tipo_lancamento": tipo_lancamento,
+                    "situacao": situacao,
+                    "id_usuario": id_usuario,
+                }
             )
-            conn.commit()
+            db.commit()
             return True
-    except psycopg2.Error as e:
-        print(f"Erro ao atualizar lançamento: {e}")
-        return False
-    finally:
-        conn.close()
+        except SQLAlchemyError as e:
+            db.rollback()
+            print(f"Erro ao atualizar lançamento: {e}")
+            return False
 
 
 def deletar_lancamento_db(launch_id):
     """
     Deletes a launch from the database.
     """
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cursor:
-            query = "DELETE FROM lancamento WHERE id = %s"
-            cursor.execute(query, (launch_id,))
-            conn.commit()
+    with SessionLocal() as db:
+        try:
+            db.query(Lancamento).filter(Lancamento.id == launch_id).delete()
+            db.commit()
             return True
-    except psycopg2.Error as e:
-        print(f"Erro ao deletar lançamento: {e}")
-        return False
-    finally:
-        conn.close()
+        except SQLAlchemyError as e:
+            db.rollback()
+            print(f"Erro ao deletar lançamento: {e}")
+            return False

@@ -89,3 +89,17 @@ Dashboard Page:
 ![alt text](dashboard.png)
 
 **Note**: This doesn't represent the final version of the project, it was made for academic purposes and it will be updated soon.
+
+---
+
+## 🧪 Running the Alembic Migration
+
+1. Importar o novo model no migrations/env.py (se for model novo)
+2. Gerar a migration
+    ```bash
+    alembic revision --autogenerate -m "descrição da mudança"
+    ```
+3. Aplicar
+    ```bash
+    alembic upgrade head
+    ```

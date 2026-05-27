@@ -16,10 +16,9 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Copia docker-compose.yml e dump.sql para a pasta de homologação
+      - name: Copia docker-compose.yml para a pasta de homologação
         run: |
           cp $GITHUB_WORKSPACE/docker-compose.yml .
-          cp $GITHUB_WORKSPACE/dump.sql .
 
       - name: Gera o arquivo .env
         run: |
@@ -31,8 +30,6 @@ jobs:
           DB_PASSWORD=${{secrets.DB_PASSWORD}}
           SECRET_SESSION_KEY=${{secrets.SECRET_SESSION_KEY}}
           EOF
-
-      # Fazer algo para rodar migrations
 
       - name: Atualização do ambiente de Homologação
         run: |
