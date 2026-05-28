@@ -30,6 +30,7 @@ jobs:
 
       - name: Executar Testes e gerar XML
         run: |
+          pytest --import-mode=importlib
           pytest --junitxml=result.xml --cov=app --cov-report=term-missing
 
       - name: Exibir estatísticas no PR
