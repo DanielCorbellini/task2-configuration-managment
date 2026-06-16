@@ -3,6 +3,10 @@ name: Pipeline Produção
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   qualidade-codigo:
     uses: ./.github/workflows/pylint.yml
@@ -16,14 +20,14 @@ jobs:
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Instalar dependências
         run: |
           pip install -r requirements-dev.txt
           pip install pytest-cov
 
-      - name: D) Executar Testes em ambiente de Produção
+      - name: Executar Testes e gerar XML
         run: |
           pytest --junitxml=result.xml --cov=app --cov-report=term-missing
 
@@ -33,30 +37,79 @@ jobs:
         with:
           files: result.xml
 
-  deploy-producao:
-    needs: [qualidade-codigo, testes] 
+  build-e-push:
+    needs: [qualidade-codigo] #testes AJUSTAR DEPOIS
     runs-on: ubuntu-latest
     steps:
-      - name: Atualização do ambiente de Produção
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          password: ${{ secrets.VM_PASS }}
-          script: |
-            cd /home/univates/CM/prod
-            
-            if [ -d ".git" ]; then
-              echo "Atualizando ambiente de produção..."
+      - name: Checkout
+        uses: actions/checkout@v4
 
-              git fetch origin
-              git switch main
-              git pull origin main
-            else
-              echo "Clonando produção pela primeira vez..."
-              git clone -b main https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git .
-            fi
-            
-            # Atualiza os containers de produção
-            # Mudar a porta depois
-            docker compose up -d --build
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Define o nome do repositório em lowercase
+        env:
+          REPO_NAME: "${{ github.repository }}"
+        run: |
+          echo "REPO_LOWER=${REPO_NAME,,}" >> ${GITHUB_ENV}
+
+      - name: Build e Push da Imagem de Produção
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ env.REPO_LOWER }}:main
+
+  deploy-producao:
+    needs: [build-e-push]
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        working-directory: /home/univates/CM/prod
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Copia docker-compose.yml para a pasta de produção
+        run: |
+          cp $GITHUB_WORKSPACE/docker-compose.yml .
+
+      - name: Gera o arquivo .env
+        run: |
+          cat > .env << EOF
+          APP_TAG=main
+          APP_PORT_HOST=5002
+          DB_PORT_HOST=5434
+          DB_USER=${{ secrets.PROD_DB_USER }}
+          DB_HOST=db
+          DB_PORT=5432
+          DB_NAME=${{ secrets.PROD_DB_NAME }}
+          DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          SECRET_SESSION_KEY=${{ secrets.PROD_SECRET_SESSION_KEY }}
+          EOF
+
+      - name: Atualização do ambiente de Produção
+        run: |
+          echo "1. Fazendo login de forma segura no GHCR..."
+          docker login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
+
+          echo "2. Baixando a versão mais recente de produção..."
+          APP_TAG=main docker compose pull
+
+          echo "3. Subindo apenas o container do banco de dados..."
+          APP_TAG=main docker compose up -d db
+
+          echo "4. Rodando migrations em um container temporário..."
+          APP_TAG=main docker compose run --rm app alembic upgrade head
+
+          echo "5. Atualizando ambiente de produção..."
+          APP_TAG=main docker compose up -d --remove-orphans
+
+          echo "6. Limpeza de credenciais..."
+          docker logout ghcr.io
