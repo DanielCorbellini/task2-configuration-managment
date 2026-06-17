@@ -23,9 +23,11 @@ jobs:
       - name: Gera o arquivo .env
         run: |
           cat > .env << EOF
+          APP_PORT_HOST=5001
+          DB_PORT_HOST=5433
+          DB_HOST=db
+          DB_PORT=5432
           DB_USER=${{secrets.DB_USER}}
-          DB_HOST=${{secrets.DB_HOST}}
-          DB_PORT=${{secrets.DB_PORT}}
           DB_NAME=${{secrets.DB_NAME}}
           DB_PASSWORD=${{secrets.DB_PASSWORD}}
           SECRET_SESSION_KEY=${{secrets.SECRET_SESSION_KEY}}

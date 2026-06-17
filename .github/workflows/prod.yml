@@ -70,7 +70,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: /home/univates/CM/prod
+        working-directory: /home/univates/cm/prod
 
     steps:
       - name: Checkout do repositório
@@ -83,12 +83,11 @@ jobs:
       - name: Gera o arquivo .env
         run: |
           cat > .env << EOF
-          APP_TAG=main
           APP_PORT_HOST=5002
           DB_PORT_HOST=5434
-          DB_USER=${{ secrets.PROD_DB_USER }}
           DB_HOST=db
           DB_PORT=5432
+          DB_USER=${{ secrets.PROD_DB_USER }}
           DB_NAME=${{ secrets.PROD_DB_NAME }}
           DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
           SECRET_SESSION_KEY=${{ secrets.PROD_SECRET_SESSION_KEY }}

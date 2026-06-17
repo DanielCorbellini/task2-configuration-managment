@@ -9,8 +9,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      # DB_PORT_HOST define a porta exposta no host (padrão: 5433 para homolog)
-      - "${DB_PORT_HOST:-5433}:5432"
+      # DB_PORT_HOST define a porta exposta no host
+      - "${DB_PORT_HOST}:5432"
     volumes:
       # Persiste os dados do banco entre recriações do contêiner
       - pgdata:/var/lib/postgresql/data
@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     ports:
       # APP_PORT_HOST define a porta exposta no host (padrão: 5001 para homolog)
-      - "${APP_PORT_HOST:-5001}:5000"
+      - "${APP_PORT_HOST}:5000"
     env_file:
       - .env
     environment:

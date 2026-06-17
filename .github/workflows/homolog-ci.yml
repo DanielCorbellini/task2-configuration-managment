@@ -4,10 +4,6 @@ name: Homolagação (CI) - Testes e Build
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   qualidade-codigo:
     uses: ./.github/workflows/pylint.yml
@@ -55,7 +51,7 @@ jobs:
 
       - name: Define o nome do repositório do github em lowercase # Serve para construir a imagem (limitação do docker)
         env:
-          REPO_NAME: '${{ github.repository }}'
+          REPO_NAME: "${{ github.repository }}"
         run: |
           echo "REPO_LOWER=${REPO_NAME,,}" >>${GITHUB_ENV}
 
