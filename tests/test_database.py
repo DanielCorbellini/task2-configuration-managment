@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-from config.connection import get_engine
+from config.connection import engine
 
 
 def test_real_db_connection_success():
@@ -11,7 +11,7 @@ def test_real_db_connection_success():
     This test runs completely independently of the `mock_db_connection` fixture.
     """
     try:
-        with get_engine().connect() as conn:
+        with engine.connect() as conn:
             # Executes an extremely simple ping operation against the database
             result = conn.execute(text("SELECT 1"))
             row = result.fetchone()
