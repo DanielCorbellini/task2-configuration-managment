@@ -3,10 +3,6 @@ name: Pipeline Produção
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   qualidade-codigo:
     uses: ./.github/workflows/pylint.yml
@@ -83,6 +79,7 @@ jobs:
       - name: Gera o arquivo .env
         run: |
           cat > .env << EOF
+          APP_TAG=main
           APP_PORT_HOST=5002
           DB_PORT_HOST=5434
           DB_HOST=db

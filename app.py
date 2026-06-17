@@ -15,6 +15,16 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_SESSION_KEY")
 
 
+@app.context_processor
+def inject_env_info():
+    """
+    Injects environment info into all templates automatically.
+    APP_TAG is set via environment variable (e.g. 'homolog', 'main').
+    """
+    app_tag = os.getenv("APP_TAG", "local")
+    return {"app_env": app_tag}
+
+
 @app.before_request
 def require_login():
     """
