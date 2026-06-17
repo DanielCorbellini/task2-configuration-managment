@@ -1,0 +1,54 @@
+# Workflow reutilizável de testes — chamado por homolog-ci.yml e prod.yml
+name: Testes
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Branch ou ref a ser testada"
+        required: true
+        type: string
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements-dev.txt
+          pip install pytest-cov
+
+      - name: Executar Testes e gerar XML
+        env:
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_NAME: test_db
+          SECRET_SESSION_KEY: test_secret_key
+        run: |
+          pytest --import-mode=importlib --junitxml=result.xml --cov=app --cov-report=term-missing

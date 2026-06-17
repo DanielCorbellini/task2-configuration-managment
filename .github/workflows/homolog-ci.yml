@@ -13,61 +13,22 @@ jobs:
     uses: ./.github/workflows/pylint.yml
 
   testes:
+    uses: ./.github/workflows/tests.yml
+    with:
+      ref: homolog
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+  deploy-homolog:
+    needs: [qualidade-codigo, testes] # [qualidade-codigo, testes] -- IREI AJUSTAR DEPOIS
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: homolog
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Instalar dependências
-        run: |
-          pip install -r requirements-dev.txt
-          pip install pytest-cov # Garante que o gerador de cobertura esteja presente
-
-      - name: Executar Testes e gerar XML
-        env:
-          DB_USER: test_user
-          DB_PASSWORD: test_password
-          DB_HOST: localhost
-          DB_PORT: "5432"
-          DB_NAME: test_db
-          SECRET_SESSION_KEY: test_secret_key
-        run: |
-          pytest --import-mode=importlib
-          pytest --junitxml=result.xml --cov=app --cov-report=term-missing
-
-      - name: Exibir estatísticas no PR
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() # Roda mesmo se os testes falharem para mostrar o que errou
-        with:
-          files: result.xml
-
-  deploy-homolog:
-    needs: [qualidade-codigo] # [qualidade-codigo, testes] -- IREI AJUSTAR DEPOIS
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Login no GitHub Container Registry # Serviço nativo do GitHub para hospedar imagens de contêineres
         uses: docker/login-action@v3

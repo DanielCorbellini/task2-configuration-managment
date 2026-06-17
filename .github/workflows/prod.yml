@@ -12,39 +12,22 @@ jobs:
     uses: ./.github/workflows/pylint.yml
 
   testes:
+    uses: ./.github/workflows/tests.yml
+    with:
+      ref: main
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+  build-e-push:
+    needs: [qualidade-codigo, testes] #testes AJUSTAR DEPOIS
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Instalar dependências
-        run: |
-          pip install -r requirements-dev.txt
-          pip install pytest-cov
-
-      - name: Executar Testes e gerar XML
-        run: |
-          pytest --junitxml=result.xml --cov=app --cov-report=term-missing
-
-      - name: Exibir estatísticas
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: result.xml
-
-  build-e-push:
-    needs: [qualidade-codigo] #testes AJUSTAR DEPOIS
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Login no GitHub Container Registry
         uses: docker/login-action@v3
@@ -77,6 +60,8 @@ jobs:
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Copia docker-compose.yml para a pasta de produção
         run: |
