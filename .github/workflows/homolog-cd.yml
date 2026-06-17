@@ -1,8 +1,12 @@
 # Utilizado sempre após o CI de Homologação for realizado
-name: Homolagação (CD) - Update de código
+name: Homolagação (CD) - Update de ambiente
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   update-homolog:
