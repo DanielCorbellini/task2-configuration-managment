@@ -3,7 +3,11 @@ name: Homolagação (CI) - Testes e Build
 
 on:
   workflow_dispatch:
-
+  
+permissions:
+  contents: read
+  packages: write
+  
 jobs:
   qualidade-codigo:
     uses: ./.github/workflows/pylint.yml
