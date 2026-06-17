@@ -1,6 +1,7 @@
-import psycopg2
 import pytest
-from config.database import get_db_connection
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from config.connection import engine
 
 
 def test_real_db_connection_success():
@@ -9,16 +10,11 @@ def test_real_db_connection_success():
     database.
     This test runs completely independently of the `mock_db_connection` fixture.
     """
-    conn = None
     try:
-        conn = get_db_connection()
-        # Executes an extremely simple ping operation against the database
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            result = cursor.fetchone()
-            assert result[0] == 1
-    except psycopg2.Error as e:
+        with engine.connect() as conn:
+            # Executes an extremely simple ping operation against the database
+            result = conn.execute(text("SELECT 1"))
+            row = result.fetchone()
+            assert row[0] == 1
+    except SQLAlchemyError as e:
         pytest.fail(f"Erro na conexão com o banco de dados: {e}")
-    finally:
-        if conn is not None:
-            conn.close()

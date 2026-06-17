@@ -1,6 +1,10 @@
 ; https://pylint.readthedocs.io/en/latest/user_guide/messages/convention/missing-function-docstring.html
+[MASTER]
+init-hook="import sys; sys.path.append('.')"
+ignore-paths=^migrations/.*$
 [MESSAGES CONTROL]
 disable=
     C0114,
     R0913,
+    R0903,
 

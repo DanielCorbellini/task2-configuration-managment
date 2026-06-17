@@ -23,6 +23,7 @@
             </svg>
             Config<span>Finance</span>
         </a>
+        <span class="env-badge env-badge--{{ app_env }}">{{ app_env }}</span>
         <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
     </header>
 
@@ -133,9 +134,9 @@
                                 <span class="badge {{ lancamento.situacao | lower }}">{{ lancamento.situacao }}</span>
                             </td>
                             <td style="display: flex; gap: 1rem;">
-                                <a href="{{ url_for('editar_lancamento_route', id=lancamento.id) }}"
+                                <a href="{{ url_for('editar_lancamento_route', launch_id=lancamento.id) }}"
                                     class="btn-edit">Editar</a>
-                                <a href="{{ url_for('deletar_lancamento_route', id=lancamento.id) }}" class="btn-delete"
+                                <a href="{{ url_for('deletar_lancamento_route', launch_id=lancamento.id) }}" class="btn-delete"
                                     onclick="return confirm('Tem certeza que deseja excluir?');">Excluir</a>
                             </td>
                         </tr>
@@ -161,7 +162,7 @@
                 <a href="{{ url_for('lancamento') }}"
                     style="color: var(--text-secondary); text-decoration: none; font-size: 1.5rem; line-height: 1;">&times;</a>
             </div>
-            <form action="{{ url_for('editar_lancamento_post', id=edit_lancamento.id) }}" method="post">
+            <form action="{{ url_for('editar_lancamento_post', launch_id=edit_lancamento.id) }}" method="post">
                 <div class="form-group">
                     <label for="descricao">Descrição</label>
                     <input type="text" id="descricao" name="descricao" value="{{ edit_lancamento.descricao }}" required>

@@ -5,36 +5,36 @@ on:
 
 jobs:
   setup-infraestrutura:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Conectar na VM e instalar dependências
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          password: ${{ secrets.VM_PASS }}
-          use_insecure_cipher: true
-          # key: ${{ secrets.VM_SSH_KEY }}
-          # passphrase: ${{ secrets.VM_PASSPHRASE }}
-          script: |
-            echo "Atualizando lista de pacotes..."
-            sudo apt-get update -y
+      - name: Instalar dependências e configurar pastas
+        run: |
+          set -x
 
-            echo "Instalando o Docker..."
-            # Utiliza o script oficial de instalação automatizada do Docker
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            sudo sh get-docker.sh
+          echo "Atualizando lista de pacotes..."
+          # A flag DEBIAN_FRONTEND=noninteractive previne que o apt-get trave pedindo confirmações visuais
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 
-            echo "Instalando o plugin do Docker Compose..."
-            sudo apt-get install docker-compose-plugin -y
+          echo "Instalando o Docker..."
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
 
-            echo "Criando pastas dos ambientes HOMOLOD e PROD..."
-            sudo mkdir -p /home/univates/CM/homolog
-            sudo mkdir -p /home/univates/CM/prod
+          echo "Instalando o plugin do Docker Compose..."
+          sudo apt-get install docker-compose-plugin -y
 
-            echo "Ajustando as permissões das pastas..."
-            sudo chown -R $USER:$USER /home/univates/CM/homolog
-            sudo chown -R $USER:$USER /home/univates/CM/prod
+          echo "Adicionando o usuário ao grupo docker..."
+          sudo gpasswd -a $USER docker
 
-            echo "Provisionamento concluído! A VM está pronta para receber os ambientes!"
+          echo "Ajustando as permissões do socket do docker..."
+          sudo chown root:$(id -gn) /var/run/docker.sock
+
+          echo "Criando pastas dos ambientes HOMOLOG e PROD..."
+          mkdir -p /home/univates/cm/homolog
+          mkdir -p /home/univates/cm/prod
+
+          echo "Ajustando as permissões das pastas..."
+          sudo chown -R $USER:$USER /home/univates/cm/homolog
+          sudo chown -R $USER:$USER /home/univates/cm/prod
+
+          echo "Provisionamento concluído! A VM está pronta para receber os ambientes!"

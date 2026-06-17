@@ -15,6 +15,16 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_SESSION_KEY")
 
 
+@app.context_processor
+def inject_env_info():
+    """
+    Injects environment info into all templates automatically.
+    APP_TAG is set via environment variable (e.g. 'homolog', 'main').
+    """
+    app_tag = os.getenv("APP_TAG", "local")
+    return {"app_env": app_tag}
+
+
 @app.before_request
 def require_login():
     """
@@ -146,7 +156,7 @@ def exportar_pdf():
     )
 
 
-@app.route("/editar_lancamento/<int:id>", methods=["GET"])
+@app.route("/editar_lancamento/<int:launch_id>", methods=["GET"])
 def editar_lancamento_route(launch_id):
     """
     Handles the edit launch page GET request.
@@ -170,7 +180,7 @@ def editar_lancamento_route(launch_id):
     )
 
 
-@app.route("/editar_lancamento/<int:id>", methods=["POST"])
+@app.route("/editar_lancamento/<int:launch_id>", methods=["POST"])
 def editar_lancamento_post(launch_id):
     """
     Handles the edit launch page POST request.
@@ -195,7 +205,7 @@ def editar_lancamento_post(launch_id):
     return redirect(url_for("lancamento"))
 
 
-@app.route("/deletar_lancamento/<int:id>", methods=["GET"])
+@app.route("/deletar_lancamento/<int:launch_id>", methods=["GET"])
 def deletar_lancamento_route(launch_id):
     """
     Handles the delete launch page GET request.

@@ -2,15 +2,9 @@
 FROM python:3.12-slim
 
 # Instala dependências de sistema necessárias para:
-#   - psycopg2-binary (libpq-dev)
-#   - WeasyPrint (libpango, libgdk-pixbuf, libffi, libcairo, etc.)
+#   - WeasyPrint (instalado via apt para puxar todas as libs nativas automaticamente)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    libffi-dev \
-    libcairo2 \
+    weasyprint \
     && rm -rf /var/lib/apt/lists/*
 
 # Define o diretório de trabalho dentro do contêiner
