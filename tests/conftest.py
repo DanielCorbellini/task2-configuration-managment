@@ -24,14 +24,17 @@ def client(app):
 @pytest.fixture
 def mock_db_connection(mocker):
     """
-    Mocks the database connection for testing
+    Mocks the SQLAlchemy SessionLocal used by all services.
+    Supports usage as: with SessionLocal() as db: ...
     """
-    mock_conn = MagicMock()
-    # Mock all the relevant places where the DB is sourced
-    mocker.patch("config.database.get_db_connection", return_value=mock_conn)
-    mocker.patch(
-        "services.lancamentos_service.get_db_connection", return_value=mock_conn
-    )
-    mocker.patch("services.usuario_service.get_db_connection", return_value=mock_conn)
+    mock_session = MagicMock()
 
-    return mock_conn
+    # SessionLocal() retorna mock_session; suporte ao context manager (with ... as db)
+    mock_session_local = MagicMock(return_value=mock_session)
+    mock_session.__enter__ = MagicMock(return_value=mock_session)
+    mock_session.__exit__ = MagicMock(return_value=False)
+
+    mocker.patch("services.lancamentos_service.SessionLocal", mock_session_local)
+    mocker.patch("services.usuario_service.SessionLocal", mock_session_local)
+
+    return mock_session
