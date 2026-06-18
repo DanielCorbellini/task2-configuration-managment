@@ -1,5 +1,5 @@
 # ConfigFinance
-test
+
 A robust configuration management and financial control system built with Python, Flask, and PostgreSQL.
 
 ## Description
