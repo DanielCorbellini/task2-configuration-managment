@@ -8,6 +8,7 @@ from config.connection import DATABASE_URL, Base
 # Importa os models para que o Base.metadata registre todas as tabelas
 from models.usuario import Usuario  # noqa: F401
 from models.lancamento import Lancamento  # noqa: F401
+from models.teste import Teste  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
