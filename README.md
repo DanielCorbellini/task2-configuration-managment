@@ -1,105 +1,140 @@
 # ConfigFinance
 
-A configuration management system built with Python, Flask, and PostgreSQL. It features a fully responsive Glassmorphism UI, a comprehensive PyTest automation suite, dynamic data filtering, PDF generation, and an automated environment provisioner.
+A robust configuration management and financial control system built with Python, Flask, and PostgreSQL.
 
-## 🏛️ Architecture
+## Description
 
-The application is built on a standard **Client-Server Architecture**:
-- **Backend**: A python-based Flask application that handles HTTP routing, session management, and server-side request processing.
-- **Database Layer**: A raw SQL execution layer utilizing `psycopg2`. Connection instances are managed securely and strictly separated into service modules (`services/lancamentos_service.py` and `services/usuario_service.py`) conforming to the Service Pattern design.
-- **Frontend**: Server-rendered Jinja2 HTML templates paired with a Vanilla CSS design system enforcing a premium Dark Mode aesthetic with dynamic interactive modals.
-- **Testing Layer**: A unit testing suite powered by `pytest` and `pytest-mock`, testing application integration by securely intercepting the `psycopg2` pipeline without touching live environments.
+ConfigFinance is a web-based configuration management and financial tracking application. Backed by a PostgreSQL database, it features secure user authentication, transaction recording (launches), dynamic data filtering, and automatic PDF report generation. The application is designed for reliability, featuring automated testing suites via PyTest, static code analysis via Pylint, and structured database migrations via Alembic.
 
-## 🛠️ Tech Stack
+The application serves as a comprehensive system demonstrating the use of modern Client-Server patterns, Service-oriented patterns for data management, and containerized deployment workflows (Docker & Docker Compose) managed through custom CI/CD pipelines.
 
-- **Python 3.12**
-- **Flask** (Web Framework & Session Management)
-- **PostgreSQL** (Relational Database)
-- **psycopg2-binary** (Postgres Adapter)
-- **WeasyPrint** (HTML to PDF Exporter)
-- **pytest & pytest-mock** (Testing Utilities)
-- **python-dotenv** (Environment Configuration)
-- **Vanilla CSS3 & HTML5** (Glassmorphism UI, Flexbox, CSS Grid)
+## Stack
 
-## 📌 Routes and Capabilities
+The application leverages the following technology stack:
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Redirects authenticated users to the dashboard. Redirects guests to login. |
-| `GET` | `/login` | Renders the authentication interface. |
-| `POST` | `/login` | Validates credentials against MD5 database hashes. |
-| `GET` | `/lancamento` | Dashboard displaying the finance table, optional query parameters (`?data=` & `?situacao=`), and the new entry form. |
-| `POST` | `/lancamento` | Processes and persists a new finance entry to the PostgreSQL database. |
-| `GET` | `/exportar_pdf` | Converts current Dashboard variables into a downloadable `.pdf` report utilizing WeasyPrint. |
-| `GET` | `/editar_lancamento/<launch_id>` | Forces the server to render a centralized edit modal injected dynamically over the Dashboard interface. |
-| `POST` | `/editar_lancamento/<launch_id>` | Updates the values of the specific postgres row. |
-| `GET` | `/deletar_lancamento/<launch_id>` | Provides immediate database purging capabilities routing users back efficiently. |
-| `GET` | `/logout` | Clears the Flask session and routes the user back to `/login`. |
+- **Core Backend**: Python 3.12, Flask (handling HTTP routing, session management, and application context)
+- **Database Layer**: PostgreSQL 16 (relational database), querying handled via raw SQL with `psycopg2-binary`
+- **Frontend Layer**: HTML5, Vanilla CSS3 (implementing a premium, responsive Glassmorphism Dark Mode aesthetic), Jinja2 templates (server-side rendering)
+- **Document Generation**: WeasyPrint (HTML to PDF converter)
+- **Testing Suite**: PyTest & PyTest-Mock (intercepting the database pipeline for isolated validation)
+- **Configuration**: python-dotenv (environment variable configuration)
+- **Database Migrations**: Alembic
+- **Containerization**: Docker & Docker Compose
 
-## 🚀 Getting Started
+## Architecture
+
+The system utilizes a structured Client-Server architecture with clean separation of concerns:
+
+1. **Client / Presentation Layer**: Server-rendered HTML templates utilizing a responsive CSS grid/flexbox layout, styled with modern typography and interactive modal dialogs.
+2. **Controller / Application Layer**: [app.py](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/app.py) handles HTTP requests, routes, user session states, and coordinates inputs with the service layer.
+3. **Service Layer**: Database queries and business logic are decoupled from routes and stored inside service classes:
+   - [services/lancamentos_service.py](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/services/lancamentos_service.py) handles financial transaction processing, querying, insertion, and aggregation.
+   - [services/usuario_service.py](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/services/usuario_service.py) manages authentication, hashing validation, and user querying.
+4. **Database / Persistence Layer**: A PostgreSQL database container storing configuration and transaction schemas, updated sequentially by Alembic migration scripts.
+
+Below is the visualized system architecture:
+
+![Architecture Diagram](architecture.png)
+
+## getting started
 
 ### Prerequisites
-- Operating System: Linux (Debian/Ubuntu recommended) or macOS
-- Standard bash terminal
-- Important libraries for WeasyPrint functionality: `libcairo2`, `libpango-1.0-0`, `libpangocairo-1.0-0` installed organically on Linux environments.
 
-### Installation
+- **Operating System**: Linux (Debian/Ubuntu recommended) or macOS
+- **System Libraries**: Essential libraries for WeasyPrint to generate PDF reports:
+  ```bash
+  sudo apt-get install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0
+  ```
+- **System Utilities**: Python 3.12, pip, and PostgreSQL client (`psql`) installed on the host.
 
-1. **Clone the repository:**
+### Local Installation
+
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/DanielCorbellini/task2-configurationManagment.git
    cd task2-configurationManagment
    ```
 
-2. **Configure the Environment:**
-   Create a `.env` file in the root directory by copying the example provided:
+2. **Configure Environment Variables**
+   Create a `.env` file in the root directory:
    ```bash
    cp .env.example .env
    ```
-   *Note: Ensure you set a random `SECRET_SESSION_KEY` inside `.env` to allow Flask sessions to work securely.*
+   *Note: Ensure you set a random `SECRET_SESSION_KEY` inside `.env` to secure Flask sessions.*
 
-3. **Automated Setup:**
-   Run the provided Bash script to automatically install Python, PostgreSQL, configure the virtual environment, install `pip` packages, and populate the database via `dump.sql`.
+3. **Run the Automated Setup**
+   Execute the setup script [setup.sh](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/setup.sh) to automatically configure the virtual environment, install requirements, and seed the database schema using `dump.sql`:
    ```bash
-   bash setup.sh
-   # If permission is denied: chmod +x setup.sh && ./setup.sh
+   chmod +x setup.sh
+   ./setup.sh
    ```
 
-4. **Start the Application:**
-   Run the built-in Flask development server using the newly created virtual environment:
+4. **Start the Application**
+   Run the Flask server within the created virtual environment:
    ```bash
    venv/bin/python app.py
    ```
+   Access the app at [http://localhost:5000](http://localhost:5000) or [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
-### 🧪 Running the Pytest Suite
-The repository includes exactly 21 testing configurations testing both web responses and postgres methods automatically.
-1. Activate your local virtual environment: `source venv/bin/activate`
-2. Run Pytest specifying the target directory: `python -m pytest tests/ -v`
+### Running Tests
 
-### Accessing the App
-Open your web browser and navigate to:
-[http://0.0.0.0:5000](http://0.0.0.0:5000) or [http://localhost:5000](http://localhost:5000)
+The application utilizes PyTest to validate database integrations and route handlers:
+1. Activate the environment:
+   ```bash
+   source venv/bin/activate
+   ```
+2. Execute the test suite:
+   ```bash
+   python -m pytest tests/ -v
+   ```
 
-### Screenshots
+### Application Interfaces
 
-Login Page:
-![alt text](login.png)
+#### Login Interface
+![Login Page](login.png)
 
-Dashboard Page:
-![alt text](dashboard.png)
+#### Dashboard Interface
+![Dashboard Page](dashboard.png)
 
-**Note**: This doesn't represent the final version of the project, it was made for academic purposes and it will be updated soon.
+## CI/CD workflows
 
----
+The repository contains automated pipelines configured via GitHub Actions for code analysis, testing, and deployment across multiple environments:
 
-## 🧪 Running the Alembic Migration
+1. **Static Analysis & Linting**
+   - **Configuration**: [pylint.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/pylint.yml)
+   - Runs `pylint` analysis across all Python source files on code pushes and workflow invocations.
 
-1. Importar o novo model no migrations/env.py (se for model novo)
-2. Gerar a migration
-    ```bash
-    alembic revision --autogenerate -m "descrição da mudança"
-    ```
-3. Aplicar
-    ```bash
-    alembic upgrade head
-    ```
+2. **Automated Testing Suite**
+   - **Configuration**: [tests.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/tests.yml)
+   - A reusable workflow that provisions a PostgreSQL 16 container, runs the PyTest suite, and generates code coverage summaries.
+
+3. **Homologation CI (Integration & Pull Request)**
+   - **Configuration**: [homolog-ci.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/homolog-ci.yml)
+   - Triggered manually (`workflow_dispatch`) on the `homolog` branch.
+   - Runs code quality analysis and tests, builds a new Docker container image, pushes the image to GitHub Container Registry (GHCR) with the `:homolog` tag, and automatically opens a PR from `homolog` to `main`.
+
+4. **Homologation CD (Continuous Deployment)**
+   - **Configuration**: [homolog-cd.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/homolog-cd.yml)
+   - Triggered manually (`workflow_dispatch`) to deploy on a self-hosted runner.
+   - Updates target folder contents, generates environment configurations, logs into GHCR, pulls the latest homologation image, boots the DB service, runs database migrations inside a temporary container (`alembic upgrade head`), and restarts the web application.
+
+5. **Production Pipeline (CI/CD)**
+   - **Configuration**: [prod.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/prod.yml)
+   - Triggered manually on the `main` branch.
+   - Runs validation tests, builds and pushes the production Docker image with the `:main` tag to GHCR, and deploys it to the production folder on the self-hosted runner, running migrations and updating containers.
+
+6. **Infrastructure Setup**
+   - **Configuration**: [setup-vm.yml](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/.github/workflows/setup-vm.yml)
+   - A bootstrap pipeline to provision a clean virtual machine by installing Docker, setting up Docker Compose plugins, adding user groups, and preparing target deployment directories.
+
+## Alembic how to run
+
+1. Import the new model in [migrations/env.py](file:///d:/Desktop/trabalho_quinta/task2-configurationManagment/migrations/env.py) (if it is a new model).
+2. Generate the migration revision:
+   ```bash
+   alembic revision --autogenerate -m "description of change"
+   ```
+3. Apply the migration:
+   ```bash
+   alembic upgrade head
+   ```

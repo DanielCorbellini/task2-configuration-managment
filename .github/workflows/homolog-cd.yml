@@ -52,8 +52,6 @@ jobs:
           APP_TAG=homolog docker compose up -d db
 
           echo "4. Rodando migrations em um container temporário..."
-          # O docker run cria um container temporário. Roda o scrip de migrations, atualiza o banco e se destrói (--rm).
-          # O container oficial ainda não foi mexido
           APP_TAG=homolog docker compose run --rm app alembic upgrade head
 
           echo "5. Atualizando ambiente de homologação..."
