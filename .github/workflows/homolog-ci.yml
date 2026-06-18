@@ -54,7 +54,7 @@ jobs:
     needs: [deploy-homolog]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     steps:
       - name: Checkout
