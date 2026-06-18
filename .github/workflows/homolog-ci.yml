@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
 
   deploy-homolog:
-    needs: [qualidade-codigo, testes] # [qualidade-codigo, testes] -- IREI AJUSTAR DEPOIS
+    needs: [qualidade-codigo, testes]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,3 +49,38 @@ jobs:
           context: . # Diretório atual
           push: true # Imagem é compilada e assim que terminar de ser construída localmente é feito o push dela para o servidor do GitHub Container Registry (GHCR)
           tags: ghcr.io/${{ env.REPO_LOWER }}:homolog
+
+  abrir-pr:
+    needs: [deploy-homolog]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: homolog
+
+      - name: Abrir PR homolog → main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head homolog \
+            --title "Homolog → Main: Atualização de Pacote" \
+            --body "## 📝 Descrição
+          - Deploy de Homologação Concluído!
+
+          ### 📌 Informações do PR
+          * **Origem:** \`homolog\`
+          * **Destino:** \`main\` (Produção)
+          * **Gatilho:** Automatizado via GitHub Actions
+
+          ## ⚠️ Revisão Necessária
+          Este PR foi gerado automaticamente após o sucesso do deploy em homologação.
+          Por favor, revise as alterações e aprove o merge para liberar na produção.
+
+          > **Atenção:** Não fazer merge sem revisar." \
+          || echo "PR já existe ou não há diferenças entre as branches."
