@@ -10,6 +10,7 @@ from models.usuario import Usuario  # noqa: F401
 from models.lancamento import Lancamento  # noqa: F401
 from models.teste import Teste  # noqa: F401
 from models.teste2 import Teste2  # noqa: F401
+from models.categoria import Categoria # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
